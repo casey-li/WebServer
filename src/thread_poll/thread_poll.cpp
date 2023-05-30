@@ -1,6 +1,6 @@
 #include "thread_poll.h"
 
-explicit ThreadPoll::ThreadPoll(size_t thread_num = 8) : m_poll(std::make_shared<Poll>())
+ThreadPoll::ThreadPoll(size_t thread_num) : m_poll(std::make_shared<Poll>())
 {
     assert(thread_num > 0);
     m_poll->m_is_stop = false;
@@ -9,7 +9,7 @@ explicit ThreadPoll::ThreadPoll(size_t thread_num = 8) : m_poll(std::make_shared
     {
         // c++ 的 std::thread 可以灵活的使用不同签名的工作函数
         // c 的 pthread.h 只接受 void *(*)(void *) 签名的函数 （要将工作函数设为全局函数或者静态成员函数）
-        // 传递一个函数指针，并将 this 指针做为参数传递给它，以绑定成员函数和实例对象
+        // 传递一个函数指针，并将 this 指针做为参数传递给它（成员函数有默认的this指针做为参数）
         std::thread(&ThreadPoll::Work, this).detach();
     }
 }
@@ -19,8 +19,6 @@ ThreadPoll::~ThreadPoll()
     if (m_poll)
     {
         {
-            // std::lock_guard 是一个简单的管理互斥锁的类，仅支持在作用域内创建时加锁，析构时解锁
-            // 不支持手动加锁解锁
             std::lock_guard<std::mutex> locker(m_poll->m_mutex);
             m_poll->m_is_stop = true;
         }
@@ -30,8 +28,6 @@ ThreadPoll::~ThreadPoll()
 
 void ThreadPoll::Work()
 {
-    // 创建互斥锁封装类 std::unique_locker<std::mutex> 用于管理互斥锁，构造函数会自动加锁，析构函数自动解锁
-    // 此外，它还支持手动加锁解锁
     std::unique_lock<std::mutex> locker(m_poll->m_mutex); 
     while (true)
     {
