@@ -44,15 +44,3 @@ void ThreadPoll::Work()
     }
 }
 
-template<typename T>
-void ThreadPoll::AddTask(T&& task)
-{
-    {
-        std::lock_guard<std::mutex> locker(m_poll->m_mutex);
-        // 使用 std::forward<T> 实现完美转发，确保参数的值类别保持不变。
-        // 若 task 是左值引用，转发后仍为左值引用；若 task 为右值引用，转发后仍为右值引用
-        // 这样可以最大限度地减少不必要的拷贝或移动操作
-        m_poll->m_tasks.emplace(std::forward<T>(task));
-    }
-    m_poll->m_cond.notify_one();
-}

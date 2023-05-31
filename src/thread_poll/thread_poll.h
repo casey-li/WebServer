@@ -35,4 +35,16 @@ private:
     std::shared_ptr<Poll> m_poll; // 池子
 };
 
+// 将函数模板的声明和定义放在一起，不然编译报错，无法实例化模板函数
+template<typename T>
+void ThreadPoll::AddTask(T&& task)
+{
+    {
+        std::lock_guard<std::mutex> locker(m_poll->m_mutex);
+        // 使用 std::forward<T> 实现完美转发，确保参数的值类别保持不变。
+        m_poll->m_tasks.emplace(std::forward<T>(task));
+    }
+    m_poll->m_cond.notify_one();
+}
+
 #endif
