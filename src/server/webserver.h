@@ -44,7 +44,7 @@ private: // 主线程调用的函数
     // 更新当前客户的最近访问时间，并将写任务 (WriteTask) 交给工作队列，让子线程去处理
     void DealWrite(HttpConnection &client);
 
-
+    // 发送错误信息
     void SendError(int fd, const std::string &erro_info);
 
     // 设置文件描述符的属性为非阻塞
@@ -57,23 +57,23 @@ private: // 子线程调用的函数
     // 调用 HttpConnection 的 Write
     void WriteTask(HttpConnection &client);
 
-    // 根据客户端处理的状态修改监听事件，重新设置是监听读还是写事件
+    // 调用 HttpConnection 的 Process，解析请求并生成响应。若成功则修改监听事件为写事件，否则继续监听读事件
     void Process(HttpConnection &client);
 
 private:
 
-    static const int MAX_FD = 64435;
-    int m_port;
-    bool m_is_close;
-    int m_listen_fd;
-    std::string m_resource_dir;
+    static const int MAX_FD_ = 64435;
+    int port_;
+    bool is_close_;
+    int listen_fd_;
+    std::string resource_dir_;
 
-    uint32_t m_listen_event;
-    uint32_t m_connection_event;
+    uint32_t listen_event_;
+    uint32_t connection_event_;
 
-    std::unique_ptr<ThreadPoll> m_thread_poll;
-    std::unique_ptr<Epoller> m_epoller;
-    std::unordered_map<int, HttpConnection> m_users;
+    std::unique_ptr<ThreadPoll> thread_poll_;
+    std::unique_ptr<Epoller> epoller_;
+    std::unordered_map<int, HttpConnection> users_;
 };
 
 

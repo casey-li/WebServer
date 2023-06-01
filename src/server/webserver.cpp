@@ -7,17 +7,17 @@ TODO:
 3、设置日志相关信息
 */
 WebServer::WebServer(int port, int trigger_mode, int connect_poll_num, int thread_num) :
-                    m_port(port), m_is_close(false), m_listen_event(0), m_connection_event(0),
-                    m_resource_dir("/home/casey/niuke/webserver/resources/"), 
-                    m_thread_poll(std::make_unique<ThreadPoll>(thread_num)), m_epoller(std::make_unique<Epoller>())
+                    port_(port), is_close_(false), listen_event_(0), connection_event_(0),
+                    resource_dir_("/home/casey/niuke/webserver/resources/"), 
+                    thread_poll_(std::make_unique<ThreadPoll>(thread_num)), epoller_(std::make_unique<Epoller>())
 {
-    // HttpConnection::m_connection_number = 0;
-    // HttpConnection::m_resource_dir = m_resource_dir;
+    HttpConnection::http_connection_numner_ = 0;
+    HttpConnection::resource_dir_ = resource_dir_;
     // SqlConnection::
     InitEventMode(trigger_mode);
     if (!InitSocket()) 
     {
-        m_is_close = true;
+        is_close_ = true;
     }
 
     // 根据是否需要打印日志设置相关信息 
@@ -26,8 +26,8 @@ WebServer::WebServer(int port, int trigger_mode, int connect_poll_num, int threa
 // todo : 关闭sql池
 WebServer::~WebServer()
 {
-    close(m_listen_fd);
-    m_is_close = true;
+    close(listen_fd_);
+    is_close_ = true;
     // 关闭sql池
 }
 
@@ -36,36 +36,36 @@ WebServer::~WebServer()
 void WebServer::Start()
 {
     int timeout = -1; // 默认epoll_wait 阻塞
-    if (!m_is_close)
+    if (!is_close_)
     {
         // 打印日志
     }
-    while (!m_is_close)
+    while (!is_close_)
     {
         // 根据定时器设置timeout
-        int event_number = m_epoller->Wait(timeout);
+        int event_number = epoller_->Wait(timeout);
         for (int i = 0; i < event_number; ++i)
         {
-            int fd = m_epoller->GetEventFd(i);
-            uint32_t event = m_epoller->GetEvents(i);
-            if (fd == m_listen_event)
+            int fd = epoller_->GetEventFd(i);
+            uint32_t event = epoller_->GetEvents(i);
+            if (fd == listen_fd_)
             {
                 DealListen();
             }
             else if (event & (EPOLLRDHUP | EPOLLHUP | EPOLLERR))
             {
-                assert(m_users.count(fd) > 0);
-                CloseConnection(m_users[fd]);
+                assert(users_.count(fd) > 0);
+                CloseConnection(users_[fd]);
             }
             else if (event & EPOLLIN)
             {
-                assert(m_users.count(fd) > 0);
-                DealRead(m_users[fd]);
+                assert(users_.count(fd) > 0);
+                DealRead(users_[fd]);
             }
             else if (event & EPOLLOUT)
             {
-                assert(m_users.count(fd) > 0);
-                DealWrite(m_users[fd]);
+                assert(users_.count(fd) > 0);
+                DealWrite(users_[fd]);
             }
             else
             {
@@ -82,22 +82,22 @@ void WebServer::InitEventMode(int trigger_mode)
     // EPOLLHUP 表示发生了挂起事件，通常与文件描述符相关的异常情况有关，如管道破裂、连接被重置等
     // EPOLLERR 表示发生了错误事件，通常表示出现了与文件描述符相关的错误，如连接错误、I/O 错误等
     // EPOLLONESHOT 表示注册的文件描述符只能触发一次事件，触发后需要重新设置才能继续触发。这可以用于实现一次性的事件处理
-    m_listen_event = EPOLLRDHUP | EPOLLHUP | EPOLLERR;
-    m_connection_event = EPOLLONESHOT | EPOLLRDHUP | EPOLLHUP | EPOLLERR;
+    listen_event_ = EPOLLRDHUP | EPOLLHUP | EPOLLERR;
+    connection_event_ = EPOLLONESHOT | EPOLLRDHUP | EPOLLHUP | EPOLLERR;
     switch (trigger_mode)
     {
         case 0:
             break;
         case 1:
-            m_connection_event |= EPOLLET;
+            connection_event_ |= EPOLLET;
             break;
         case 2:
-            m_listen_event |= EPOLLET;
+            listen_event_ |= EPOLLET;
             break;
         case 3:
         default:
-            m_listen_event |= EPOLLET;
-            m_connection_event |= EPOLLET;
+            listen_event_ |= EPOLLET;
+            connection_event_ |= EPOLLET;
             break;
     }
     // HttpConnection::
@@ -106,13 +106,13 @@ void WebServer::InitEventMode(int trigger_mode)
 // TODO：设置优雅关闭，打印日志信息
 bool WebServer::InitSocket()
 {
-    if (m_port > 65535 || m_port < 1024)
+    if (port_ > 65535 || port_ < 1024)
     {
         // 打印日志
         return false;
     }
 
-    if ((m_listen_fd = socket(PF_INET, SOCK_STREAM, 0)) == -1)
+    if ((listen_fd_ = socket(PF_INET, SOCK_STREAM, 0)) == -1)
     {
         // 打印日志
         return false;
@@ -122,39 +122,39 @@ bool WebServer::InitSocket()
     // setsockopt 设置 SO_LINGER 属性
 
     int reuse = 1;
-    if ((setsockopt(m_listen_fd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse))) == -1)
+    if ((setsockopt(listen_fd_, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse))) == -1)
     {
         // 打印日志
-        close(m_listen_fd);
+        close(listen_fd_);
         return false;
     }
 
     struct sockaddr_in address;
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = htonl(INADDR_ANY);
-    address.sin_port = htons(m_port);
-    if (bind(m_listen_fd, (struct sockaddr *)&address, sizeof(address)) == -1)
+    address.sin_port = htons(port_);
+    if (bind(listen_fd_, (struct sockaddr *)&address, sizeof(address)) == -1)
     {
         // 打印日志
-        close(m_listen_fd);
+        close(listen_fd_);
         return false;
     }
 
-    if (listen(m_listen_fd, 5) == -1)
+    if (listen(listen_fd_, 5) == -1)
     {
         // 打印日志
-        close(m_listen_fd);
+        close(listen_fd_);
         return false;
     }
 
-    if (!m_epoller->AddFd(m_listen_fd, m_listen_event | EPOLLIN))
+    if (!epoller_->AddFd(listen_fd_, listen_event_ | EPOLLIN))
     {
         // 打印日志
-        close(m_listen_fd);
+        close(listen_fd_);
         return false;
     }
 
-    if (!SetNonblock(m_listen_fd))
+    if (!SetNonblock(listen_fd_))
     {
         // 打印日志
     }
@@ -170,28 +170,28 @@ void WebServer::DealListen()
     // 若监听事件设为了 ET 模式，需要一次性处理所有连接的请求（do while）
     do
     {
-        int fd = accept(m_listen_fd, (struct sockaddr *)&client_address, &len);
+        int fd = accept(listen_fd_, (struct sockaddr *)&client_address, &len);
         if (fd < 0)
         {
             return;
         }
-        else if (HttpConnection::m_http_connection_numner >= MAX_FD)
+        else if (HttpConnection::http_connection_numner_ >= MAX_FD_)
         {
             SendError(fd, "Server is busy now!");
             // 打印日志
             return;
         }
         AddClient(fd, client_address);
-    } while (m_listen_event & EPOLLET);
+    } while (listen_event_ & EPOLLET);
 }
 
 // TODO 增加定时器功能，处理长久未发送信息的客户端
 void WebServer::AddClient(int fd, const sockaddr_in &address)
 {
     assert(fd > 0);
-    m_users[fd].Initialization(fd, address);
+    users_[fd].Initialization(fd, address);
     // 加入到定时器链表中
-    m_epoller->AddFd(fd, m_listen_event | EPOLLIN);
+    epoller_->AddFd(fd, listen_event_ | EPOLLIN);
     SetNonblock(fd);
     // 打印日志
 }
@@ -200,7 +200,7 @@ void WebServer::CloseConnection(HttpConnection &client)
 {
     assert(client.GetFd() > 0);
     // 打印日志
-    m_epoller->DeleteFd(client.GetFd());
+    epoller_->DeleteFd(client.GetFd());
     client.Close();
 }
 
@@ -211,7 +211,7 @@ void WebServer::DealRead(HttpConnection &client)
     // 更新当前客户端的最近请求事件，在定时器中修改内容
 
     // 使用 bind 将成员函数修改为 void(*)() 的可调用对象（绑定成员函数，必须传递 this），右值 
-    m_thread_poll->AddTask(std::bind(&WebServer::ReadTask, this, std::ref(client)));
+    thread_poll_->AddTask(std::bind(&WebServer::ReadTask, this, std::ref(client)));
 }
 
 void WebServer::ReadTask(HttpConnection &client)
@@ -232,7 +232,7 @@ void WebServer::DealWrite(HttpConnection &client)
 {
     assert(client.GetFd() > 0);
     // 更新当前客户端的最近请求事件，在定时器中修改内容
-    m_thread_poll->AddTask(std::bind(&WebServer::WriteTask, this, std::ref(client)));
+    thread_poll_->AddTask(std::bind(&WebServer::WriteTask, this, std::ref(client)));
 }
 
 void WebServer::WriteTask(HttpConnection &client)
@@ -253,7 +253,7 @@ void WebServer::WriteTask(HttpConnection &client)
     if (res < 0 && error_num == EAGAIN)
     {
         // 继续传输
-        m_epoller->ModifyFd(client.GetFd(), m_connection_event | EPOLLOUT);
+        epoller_->ModifyFd(client.GetFd(), connection_event_ | EPOLLOUT);
         return;
     }
     CloseConnection(client);
@@ -263,11 +263,11 @@ void WebServer::Process(HttpConnection &client)
 {
     if (client.Process())
     {
-        m_epoller->ModifyFd(client.GetFd(), m_connection_event | EPOLLOUT);
+        epoller_->ModifyFd(client.GetFd(), connection_event_ | EPOLLOUT);
     }
     else
     {
-        m_epoller->ModifyFd(client.GetFd(), m_connection_event | EPOLLIN);
+        epoller_->ModifyFd(client.GetFd(), connection_event_ | EPOLLIN);
     }
 }
 
