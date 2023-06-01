@@ -63,9 +63,9 @@ bool HttpConnection::Process()
     iov_[0].iov_len = write_buf_.ReadableBytes();
     iov_num_ = 1;
     // 请求文件
-    if (response_.GetFileSize() > 0 && response_.File())
+    if (response_.GetFileSize() > 0 && response_.GetFileAddr())
     {
-        iov_[1].iov_base = response_.File();
+        iov_[1].iov_base = response_.GetFileAddr();
         iov_[1].iov_len = response_.GetFileSize();
         iov_num_ = 2;
     }
