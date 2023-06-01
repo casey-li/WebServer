@@ -48,49 +48,49 @@ public:
     // 写入了 len 字节的数据，更新写指针的位置
     void UpdateWritePos(size_t len)
     {
-        m_write_pos += len;
+        write_pos_ += len;
     }
 
     // 返回缓冲区中可读数据的指针
     char *GetReadPtr()
     {
-        return BeginPtr() + m_read_pos;
+        return BeginPtr() + read_pos_;
     }
 
     // 返回缓冲区中可读数据的常量指针
     const char *GetReadPtr() const
     {
-        return BeginPtr() + m_read_pos;
+        return BeginPtr() + read_pos_;
     }
 
     // 返回可写位置的指针
     char *GetWritePtr()
     {
-        return BeginPtr() + m_write_pos;
+        return BeginPtr() + write_pos_;
     }
 
     // 返回可写位置的常量指针
     const char *GetWritePtr() const
     {
-        return BeginPtr() + m_write_pos;
+        return BeginPtr() + write_pos_;
     }
 
     // 返回可写的字节数目
     size_t WritableBytes() const
     {
-        return m_buffer.size() - m_write_pos;
+        return buffer_.size() - write_pos_;
     }
 
     // 返回可读的字节数目
     size_t ReadableBytes() const
     {
-        return m_write_pos - m_read_pos;
+        return write_pos_ - read_pos_;
     }
 
     // 返回已经读取的字节数目，扩容的时候可以利用这部分空间
     size_t HasReadBytes() const
     {
-        return m_read_pos;
+        return read_pos_;
     }
 
 private:
@@ -103,22 +103,22 @@ private:
     // 返回指向缓冲区首元素的指针
     char *BeginPtr()
     {
-        return &m_buffer.front();
+        return &buffer_.front();
     }
 
     // 返回指向缓冲区首元素的常量指针
     const char *BeginPtr() const
     {
-        return &m_buffer.front();
+        return &buffer_.front();
     }
 
-    std::vector<char> m_buffer;
+    std::vector<char> buffer_;
 
     // 利用 atomic 实现对变量的原子操作
     // 原子类型对象的主要特点就是从不同线程访问不会导致数据竞争
-    std::atomic<size_t> m_read_pos; // 读位置
+    std::atomic<size_t> read_pos_; // 读位置
 
-    std::atomic<size_t> m_write_pos; // 写位置
+    std::atomic<size_t> write_pos_; // 写位置
 };
 
 #endif

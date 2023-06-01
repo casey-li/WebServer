@@ -1,9 +1,9 @@
 #include "thread_poll.h"
 
-ThreadPoll::ThreadPoll(size_t thread_num) : m_poll(std::make_shared<Poll>())
+ThreadPoll::ThreadPoll(size_t thread_num) : poll_(std::make_shared<Poll>())
 {
     assert(thread_num > 0);
-    m_poll->m_is_stop = false;
+    poll_->is_stop = false;
     // 创建线程并进行线程分离
     for (size_t i = 0; i < thread_num; ++i)
     {
@@ -16,31 +16,31 @@ ThreadPoll::ThreadPoll(size_t thread_num) : m_poll(std::make_shared<Poll>())
 
 ThreadPoll::~ThreadPoll()
 {
-    if (m_poll)
+    if (poll_)
     {
         {
-            std::lock_guard<std::mutex> locker(m_poll->m_mutex);
-            m_poll->m_is_stop = true;
+            std::lock_guard<std::mutex> locker(poll_->mtx);
+            poll_->is_stop = true;
         }
-        m_poll->m_cond.notify_all();
+        poll_->cond.notify_all();
     }
 }
 
 void ThreadPoll::Work()
 {
-    std::unique_lock<std::mutex> locker(m_poll->m_mutex); 
+    std::unique_lock<std::mutex> locker(poll_->mtx); 
     while (true)
     {
-        if (!m_poll->m_tasks.empty())
+        if (!poll_->tasks.empty())
         {
-            auto task = std::move(m_poll->m_tasks.front());
-            m_poll->m_tasks.pop();
+            auto task = std::move(poll_->tasks.front());
+            poll_->tasks.pop();
             locker.unlock(); // 解锁，让其他线程也可以去取任务工作
             task();          // 因为工作队列中保存的就是可调用对象，可以直接执行任务
             locker.lock();
         }
-        else if (m_poll->m_is_stop) break;
-        else m_poll->m_cond.wait(locker); // 当前无任务，等待唤醒
+        else if (poll_->is_stop) break;
+        else poll_->cond.wait(locker); // 当前无任务，等待唤醒
     }
 }
 

@@ -1,7 +1,7 @@
 #include "buffer.h"
 
-Buffer::Buffer(int init_buffer_size) : m_buffer(init_buffer_size), 
-                m_read_pos(0), m_write_pos(0) {}
+Buffer::Buffer(int init_buffer_size) : buffer_(init_buffer_size), 
+                read_pos_(0), write_pos_(0) {}
 
 ssize_t Buffer::ReadFd(int fd, int &error_num)
 {
@@ -28,7 +28,7 @@ ssize_t Buffer::ReadFd(int fd, int &error_num)
     else
     {
         // 装不下，先移动写指针，再将 buf 中的数据追加到缓冲区
-        m_write_pos = m_buffer.size(); 
+        write_pos_ = buffer_.size(); 
         Append(buf, static_cast<size_t>(len) - writeable_size);
     }
     return len;
@@ -76,7 +76,7 @@ void Buffer::Append(const Buffer &buff)
 void Buffer::Retrieve(size_t len)
 {
     assert(len <= ReadableBytes());
-    m_read_pos += len;
+    read_pos_ += len;
 }
 
 void Buffer::RetrieveUntil(const char *end)
@@ -87,9 +87,9 @@ void Buffer::RetrieveUntil(const char *end)
 
 void Buffer::RetrieveAll()
 {
-    std::fill(m_buffer.begin(), m_buffer.end(), 0);
-    m_read_pos = 0;
-    m_write_pos = 0;
+    std::fill(buffer_.begin(), buffer_.end(), 0);
+    read_pos_ = 0;
+    write_pos_ = 0;
 }
 
 std::string Buffer::RetrieveAllToStr()
@@ -115,12 +115,12 @@ void Buffer::ExpandSize(size_t len)
     {
         size_t need_read_size = ReadableBytes();
         std::copy(GetReadPtr(), GetWritePtr(), BeginPtr());
-        m_read_pos = 0;
-        m_write_pos = need_read_size;
+        read_pos_ = 0;
+        write_pos_ = need_read_size;
         assert(need_read_size == ReadableBytes());
     }
     else
     {
-        m_buffer.resize(m_write_pos + len + 1);
+        buffer_.resize(write_pos_ + len + 1);
     }
 }

@@ -27,9 +27,9 @@ public:
     uint32_t GetEvents(size_t i) const;     // 返回成功监听到的发生变化的客户端的监听事件
 
 private:
-    int m_epoll_fd; // 创建的epoll对象的fd
+    int epoll_fd_; // 创建的epoll对象的fd
     
-    std::vector<struct epoll_event> m_events; // 调用epoll_wait() 传递的数组
+    std::vector<struct epoll_event> events_; // 调用epoll_wait() 传递的数组
 };
 
 #endif
