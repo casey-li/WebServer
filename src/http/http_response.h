@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include "../buffer/buffer.h"
+#include "../log/log.h"
 
 class HttpResponse
 {

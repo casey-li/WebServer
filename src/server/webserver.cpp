@@ -4,11 +4,10 @@
 /*
 TODO:
 2、Sql连接池的初始化
-3、设置日志相关信息
 */
 WebServer::WebServer(
-        int port, int timeout, int trigger_mode, bool open_linger_, 
-        int connect_poll_num, int thread_num) :
+        int port, int timeout, int trigger_mode, bool open_linger_, int connect_poll_num, 
+        int thread_num, bool open_log, int log_level, int block_queue_size) :
         port_(port), listen_fd_(-1), timeout_MS_(timeout), is_close_(false), 
         open_linger_(open_linger_), resource_dir_(""), listen_event_(0), 
         connection_event_(0), thread_poll_(std::make_unique<ThreadPoll>(thread_num)),
@@ -22,14 +21,34 @@ WebServer::WebServer(
     resource_dir_ += "/resources/";
     HttpConnection::http_connection_numner_ = 0;
     HttpConnection::resource_dir_ = resource_dir_;
+    if (open_log)
+    {
+        Log::GetInstance()->Initialization(log_level, "./log", ".log", block_queue_size);
+    }
     // SqlConnection::
     InitEventMode(trigger_mode);
     if (!InitSocket()) 
     {
         is_close_ = true;
     }
-
-    // 根据是否需要打印日志设置相关信息 
+    // 根据是否需要打印日志设置相关信息
+    if (open_log)
+    {
+        // Log::GetInstance()->Initialization(log_level, "./log", ".log", block_queue_size);
+        if (is_close_)
+        {
+            LOG_ERROR("========== Server initialization error! ==========");
+        }
+        else
+        {
+            LOG_INFO("========== Server initialization ==========");
+            LOG_INFO("Port: %d, OpenLinger: %s", port_, open_linger_? "true" : "false");
+            LOG_INFO("Listen Mode: %s, OpenConn Mode: %s", (listen_event_ & EPOLLET ? "ET": "LT"), (connection_event_ & EPOLLET ? "ET": "LT"));
+            LOG_INFO("Log level: %d", log_level);
+            LOG_INFO("ResourceDir: %s", HttpConnection::resource_dir_);
+            // //LOG_INFO("SqlConnPool's thread num: %d, ThreadPool' thread num: %d", connect_poll_num, thread_num);
+        }
+    }
 }
 
 // todo : 关闭sql池
@@ -45,7 +64,7 @@ void WebServer::Start()
     int timeout = -1; // 默认epoll_wait 阻塞
     if (!is_close_)
     {
-        // 打印日志
+        LOG_INFO("========== Start Server ==========");
     }
     while (!is_close_)
     {
@@ -80,7 +99,7 @@ void WebServer::Start()
             }
             else
             {
-                // 打印日志
+                LOG_ERROR("Unexpected event");
             }
         }
     }
@@ -113,18 +132,17 @@ void WebServer::InitEventMode(int trigger_mode)
     HttpConnection::is_ET_mode_ = connection_event_ & EPOLLET;
 }
 
-// TODO：打印日志信息
 bool WebServer::InitSocket()
 {
     if (port_ > 65535 || port_ < 1024)
     {
-        // 打印日志
+        LOG_ERROR("Port: %d error!",  port_);
         return false;
     }
 
     if ((listen_fd_ = socket(PF_INET, SOCK_STREAM, 0)) == -1)
     {
-        // 打印日志
+        LOG_ERROR("Create socket error!");
         return false;
     }
 
@@ -137,7 +155,7 @@ bool WebServer::InitSocket()
     }
     if (setsockopt(listen_fd_, SOL_SOCKET, SO_LINGER, &opt_linger, sizeof(opt_linger)) == -1)
     {
-        // 打印日志
+        LOG_ERROR("Init linger error!");
         close(listen_fd_);
         return false;
     }
@@ -146,7 +164,7 @@ bool WebServer::InitSocket()
     int reuse = 1;
     if ((setsockopt(listen_fd_, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse))) == -1)
     {
-        // 打印日志
+        LOG_ERROR("set socket setsockopt error !");
         close(listen_fd_);
         return false;
     }
@@ -157,31 +175,30 @@ bool WebServer::InitSocket()
     address.sin_port = htons(port_);
     if (bind(listen_fd_, (struct sockaddr *)&address, sizeof(address)) == -1)
     {
-        // 打印日志
+        LOG_ERROR("Bind Port: %d error!", port_);
         close(listen_fd_);
         return false;
     }
 
     if (listen(listen_fd_, 5) == -1)
     {
-        // 打印日志
+        LOG_ERROR("Listen port: %d error!", port_);
         close(listen_fd_);
         return false;
     }
 
     if (!epoller_->AddFd(listen_fd_, listen_event_ | EPOLLIN))
     {
-        // 打印日志
+        LOG_ERROR("Add listen error!");
         close(listen_fd_);
         return false;
     }
 
     if (!SetNonblock(listen_fd_))
     {
-        // 打印日志
+        LOG_ERROR("Set File Nonblock failed!");
     }
-
-    // 打印日志
+    LOG_INFO("Init Socket Success! listen fd : %d", listen_fd_);
     return true;
 }
 
@@ -200,7 +217,7 @@ void WebServer::DealListen()
         else if (HttpConnection::http_connection_numner_ >= MAX_FD_)
         {
             SendError(fd, "Server is busy now!");
-            // 打印日志
+            LOG_WARN("Clients is full!");
             return;
         }
         AddClient(fd, client_address);
@@ -217,14 +234,14 @@ void WebServer::AddClient(int fd, const sockaddr_in &address)
     }
     epoller_->AddFd(fd, listen_event_ | EPOLLIN);
     SetNonblock(fd);
-    // 打印日志
+    LOG_INFO("Client[%d] in!", users_[fd].GetFd());
 }
 
 void WebServer::CloseConnection(HttpConnection &client)
 {
     std::cout << client.GetFd() << " close\n";
     assert(client.GetFd() > 0);
-    // 打印日志
+    LOG_INFO("Client[%d] quit!", client.GetFd());
     epoller_->DeleteFd(client.GetFd());
     client.Close();
 }
@@ -307,7 +324,7 @@ void WebServer::SendError(int fd, const std::string &erro_info)
     assert(fd > 0);
     if (send(fd, erro_info.c_str(), erro_info.size(), 0) == -1)
     {
-        // 打印日志
+        LOG_WARN("send error to client[%d] !", fd);
     }
     close(fd);
 }

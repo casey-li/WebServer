@@ -7,6 +7,7 @@
 #include <unordered_set>
 #include <regex>
 #include "../buffer/buffer.h"
+#include "../log/log.h"
 
 class HttpRequest
 {

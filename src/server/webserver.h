@@ -11,6 +11,7 @@
 #include "../epoller/epoller.h"
 #include "../http/http_connection.h"
 #include "../timer/heap_timer.h"
+#include "../log/log.h"
 
 
 class WebServer
@@ -18,7 +19,8 @@ class WebServer
 public:
     WebServer(int port, int timeout, int trigger_mode, 
             bool open_linger_, int connect_poll_num, 
-            int thread_num);
+            int thread_num, bool open_log, int log_level,
+            int block_queue_size);
 
     ~WebServer();
 

@@ -8,6 +8,7 @@
 #include <sys/uio.h> // struct iovec
 #include <atomic>
 #include "../buffer/buffer.h"
+#include "../log/log.h"
 #include "http_request.h"
 #include "http_response.h"
 

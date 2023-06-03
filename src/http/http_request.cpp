@@ -69,7 +69,7 @@ bool HttpRequest::Parse(Buffer &buf)
         }
         buf.RetrieveUntil(line_end + 2);
     }
-    // 打印日志
+    LOG_DEBUG("Request method: %s, path: %s, version: %s", method_.c_str(), path_.c_str(), version_.c_str());
     return true;
 }
 
@@ -87,7 +87,7 @@ bool HttpRequest::ParseRequestLine(const std::string &line)
         parse_status_ = PARSE_HEADER;
         return true;
     }
-    // 打印日志
+    LOG_ERROR("ParseRequestLine Error!");
     return false;
 }
 
@@ -130,7 +130,7 @@ void HttpRequest::ParseContent(const std::string &line)
     body_ = line;
     ParsePost();
     parse_status_ = FINISH;
-    // 打印日志
+    LOG_DEBUG("ParseContent: %s, len: %d", line.c_str(), line.size());
 }
 
 void HttpRequest::ParsePost()
@@ -143,7 +143,7 @@ void HttpRequest::ParsePost()
         if (DEFAULT_HTML_TAG.count(path_))
         {
             int tag = DEFAULT_HTML_TAG.at(path_);
-            // 打印日志
+            LOG_DEBUG("ParsePost, tag : %d", tag);
             bool is_login = (tag == 1);
             // 验证登录信息是否正确来决定返回那个页面
             path_ = is_login ? "/welcome.html" : "/error.html";
@@ -188,7 +188,6 @@ void HttpRequest::ParseFromUrlEncoded()
                 value = body_.substr(last, cur - last);
                 last = cur + 1;
                 post_[key] = value;
-                // 打印日志
                 break;
             }
             default:

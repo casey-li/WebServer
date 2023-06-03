@@ -23,7 +23,7 @@ void HttpConnection::Initialization(int fd, const sockaddr_in& addr)
     read_buf_.RetrieveAll();
     write_buf_.RetrieveAll();
     http_connection_numner_++;
-    // 打印日志
+    LOG_INFO("Client[%d](%s:%d) in, userCount:%d", fd_, GetIP(), GetPort(), static_cast<int>(http_connection_numner_));
 }
 
 ssize_t HttpConnection::Read(int &error_num)
@@ -50,11 +50,12 @@ bool HttpConnection::Process()
     }
     else if (request_.Parse(read_buf_))
     {
-        // 打印日志
+        LOG_DEBUG("Client[%d] Request %s Success!", fd_, request_.GetPath().c_str());
         response_.Initialization(resource_dir_, request_.GetPath(), request_.GetIsKeepAlive(), 200);
     }
     else
     {
+        LOG_DEBUG("Client[%d] Request %s Failed!", fd_, request_.GetPath().c_str());
         response_.Initialization(resource_dir_, request_.GetPath(), false, 400);
     }
     response_.MakeResponse(write_buf_);
@@ -69,7 +70,6 @@ bool HttpConnection::Process()
         iov_[1].iov_len = response_.GetFileSize();
         iov_num_ = 2;
     }
-    // 打印日志
     return true;
 }
 
@@ -118,6 +118,6 @@ void HttpConnection::Close()
         is_close_ = true; 
         http_connection_numner_--;
         close(fd_);
-        // 打印日志
+        LOG_INFO("Client[%d](%s:%d) quit, UserCount:%d", fd_, GetIP(), GetPort(), static_cast<int>(http_connection_numner_));
     }
 }
