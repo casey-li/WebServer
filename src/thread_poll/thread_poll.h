@@ -8,6 +8,8 @@
 #include <functional>
 #include <cassert>
 
+#include <iostream>
+
 class ThreadPoll
 {
 public:

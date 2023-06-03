@@ -10,11 +10,15 @@
 #include "../thread_poll/thread_poll.h"
 #include "../epoller/epoller.h"
 #include "../http/http_connection.h"
+#include "../timer/heap_timer.h"
+
 
 class WebServer
 {
 public:
-    WebServer(int port, int trigger_mode, int connect_poll_num, int thread_num);
+    WebServer(int port, int timeout, int trigger_mode, 
+            bool open_linger_, int connect_poll_num, 
+            int thread_num);
 
     ~WebServer();
 
@@ -37,6 +41,9 @@ private: // 主线程调用的函数
 
     // 关闭一个客户端的连接，从 epoll 对象中删除并调用客户端的 Close()
     void CloseConnection(HttpConnection &client);
+
+    // 当跟客户端发生了活动后，更新客户端的超时时间
+    void UpdateClientTimeout(HttpConnection &client);
 
     // 更新当前客户的最近访问时间，并将读任务 (ReadTask) 交给工作队列，让子线程去处理
     void DealRead(HttpConnection &client);
@@ -63,18 +70,46 @@ private: // 子线程调用的函数
 private:
 
     static const int MAX_FD_ = 64435;
-    int port_;
-    bool is_close_;
-    int listen_fd_;
-    std::string resource_dir_;
 
-    uint32_t listen_event_;
-    uint32_t connection_event_;
+    int port_;
+
+    int listen_fd_;
+
+    int timeout_MS_;            // 超时时间
+
+    bool is_close_;
+
+    bool open_linger_;          // 是否启用linger功能
+
+    std::string resource_dir_;  // 资源地址
+
+    uint32_t listen_event_;     // 默认的服务器的监听事件
+
+    uint32_t connection_event_; // 默认的客户端连接的监听事件
 
     std::unique_ptr<ThreadPoll> thread_poll_;
+
     std::unique_ptr<Epoller> epoller_;
+    
+    std::unique_ptr<HeapTimer> timer_;
+
     std::unordered_map<int, HttpConnection> users_;
 };
 
+/*
+linger 结构体共有两个成员: l_onoff, l_linger
 
+    l_onoff: 0 表示禁用 linger, 非零表示启用 linger
+
+    l_linger: 表示 linger 的超时时间，单位是秒
+
+
+启用 linger 功能后，套接字关闭时会有以下两种情况:
+
+    1、 如果套接字发送缓冲区中还有未发送完的数据，系统会等待这些数据发送完毕，
+        直到所有数据发送成功或超过 l_linger 指定的超时时间
+
+    2、 如果超过 l_linger 指定的超时时间，而套接字发送缓冲区中仍有未发送完的数据，
+        那么未发送的数据将会被丢弃，套接字立即关闭
+*/
 #endif

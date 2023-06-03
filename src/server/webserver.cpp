@@ -1,16 +1,25 @@
 #include "webserver.h"
 
+
 /*
 TODO:
-1、HttpConnection的静态成员初始化
 2、Sql连接池的初始化
 3、设置日志相关信息
 */
-WebServer::WebServer(int port, int trigger_mode, int connect_poll_num, int thread_num) :
-                    port_(port), is_close_(false), listen_event_(0), connection_event_(0),
-                    resource_dir_("/home/casey/niuke/webserver/resources/"), 
-                    thread_poll_(std::make_unique<ThreadPoll>(thread_num)), epoller_(std::make_unique<Epoller>())
+WebServer::WebServer(
+        int port, int timeout, int trigger_mode, bool open_linger_, 
+        int connect_poll_num, int thread_num) :
+        port_(port), listen_fd_(-1), timeout_MS_(timeout), is_close_(false), 
+        open_linger_(open_linger_), resource_dir_(""), listen_event_(0), 
+        connection_event_(0), thread_poll_(std::make_unique<ThreadPoll>(thread_num)),
+        epoller_(std::make_unique<Epoller>()), timer_(std::make_unique<HeapTimer>())
+
 {
+    std::string tmp = getcwd(nullptr, 256);
+    size_t end = tmp.find("/src");
+    resource_dir_ = end != std::string::npos ? tmp.substr(0, end) : tmp;
+    assert(resource_dir_.size());
+    resource_dir_ += "/resources/";
     HttpConnection::http_connection_numner_ = 0;
     HttpConnection::resource_dir_ = resource_dir_;
     // SqlConnection::
@@ -31,8 +40,6 @@ WebServer::~WebServer()
     // 关闭sql池
 }
 
-
-// TODO 定时器模块，设置 epoll_wait() 的阻塞时间
 void WebServer::Start()
 {
     int timeout = -1; // 默认epoll_wait 阻塞
@@ -42,7 +49,11 @@ void WebServer::Start()
     }
     while (!is_close_)
     {
-        // 根据定时器设置timeout
+        // 断开超时的连接，设置 epoll_wait() 的阻塞时间为最早的未超时节点到超时需要的时间
+        if (timeout_MS_ > 0) 
+        {
+            timeout = timer_->GetNextTimeout();
+        }
         int event_number = epoller_->Wait(timeout);
         for (int i = 0; i < event_number; ++i)
         {
@@ -75,7 +86,6 @@ void WebServer::Start()
     }
 }
 
-// TODO: 设置HtppConnection 的 ET 模式
 void WebServer::InitEventMode(int trigger_mode)
 {
     // EPOLLRDHUP 表示对端（对于 TCP 连接）关闭了写通道或关闭了连接
@@ -100,10 +110,10 @@ void WebServer::InitEventMode(int trigger_mode)
             connection_event_ |= EPOLLET;
             break;
     }
-    // HttpConnection::
+    HttpConnection::is_ET_mode_ = connection_event_ & EPOLLET;
 }
 
-// TODO：设置优雅关闭，打印日志信息
+// TODO：打印日志信息
 bool WebServer::InitSocket()
 {
     if (port_ > 65535 || port_ < 1024)
@@ -118,9 +128,21 @@ bool WebServer::InitSocket()
         return false;
     }
 
-    // 根据参数设置是否优雅关闭
-    // setsockopt 设置 SO_LINGER 属性
+    // 根据参数设置是否优雅关闭，设置超时时间为 1s
+    struct linger opt_linger = {0};
+    if (open_linger_)
+    {
+        opt_linger.l_onoff = 1;
+        opt_linger.l_linger = 1;
+    }
+    if (setsockopt(listen_fd_, SOL_SOCKET, SO_LINGER, &opt_linger, sizeof(opt_linger)) == -1)
+    {
+        // 打印日志
+        close(listen_fd_);
+        return false;
+    }
 
+    // 设置端口复用
     int reuse = 1;
     if ((setsockopt(listen_fd_, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse))) == -1)
     {
@@ -185,12 +207,14 @@ void WebServer::DealListen()
     } while (listen_event_ & EPOLLET);
 }
 
-// TODO 增加定时器功能，处理长久未发送信息的客户端
 void WebServer::AddClient(int fd, const sockaddr_in &address)
 {
     assert(fd > 0);
     users_[fd].Initialization(fd, address);
-    // 加入到定时器链表中
+    if (timeout_MS_ > 0) // 加入到定时器链表中
+    {
+        timer_->Add(fd, timeout_MS_, std::bind(&WebServer::CloseConnection, this, std::ref(users_[fd])));
+    }
     epoller_->AddFd(fd, listen_event_ | EPOLLIN);
     SetNonblock(fd);
     // 打印日志
@@ -198,18 +222,26 @@ void WebServer::AddClient(int fd, const sockaddr_in &address)
 
 void WebServer::CloseConnection(HttpConnection &client)
 {
+    std::cout << client.GetFd() << " close\n";
     assert(client.GetFd() > 0);
     // 打印日志
     epoller_->DeleteFd(client.GetFd());
     client.Close();
 }
 
-// TODO 定时器修改客户端的最近访问事件
+void WebServer::UpdateClientTimeout(HttpConnection &client)
+{
+    assert(client.GetFd() > 0);
+    if (timeout_MS_ > 0)
+    {
+        timer_->AdjustTime(client.GetFd(), timeout_MS_);
+    }
+}
+
 void WebServer::DealRead(HttpConnection &client)
 {
     assert(client.GetFd() > 0);
-    // 更新当前客户端的最近请求事件，在定时器中修改内容
-
+    UpdateClientTimeout(client);
     // 使用 bind 将成员函数修改为 void(*)() 的可调用对象（绑定成员函数，必须传递 this），右值 
     thread_poll_->AddTask(std::bind(&WebServer::ReadTask, this, std::ref(client)));
 }
@@ -227,11 +259,10 @@ void WebServer::ReadTask(HttpConnection &client)
     Process(client);
 }
 
-// TODO 定时器修改客户端的最近访问事件
 void WebServer::DealWrite(HttpConnection &client)
 {
     assert(client.GetFd() > 0);
-    // 更新当前客户端的最近请求事件，在定时器中修改内容
+    UpdateClientTimeout(client);
     thread_poll_->AddTask(std::bind(&WebServer::WriteTask, this, std::ref(client)));
 }
 
