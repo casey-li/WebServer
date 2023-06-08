@@ -60,6 +60,9 @@ void Log::Initialization(int level, std::string path,
     snprintf(fileName, log_name_len - 1, "%s/%04d_%02d_%02d%s", 
         path_.c_str(), t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, suffix_.c_str());
 
+    //printf("path : %s", fileName);
+
+
     {
         std::lock_guard<std::mutex> locker(mtx_);
         buf_.RetrieveAll();

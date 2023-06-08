@@ -11,7 +11,6 @@ ThreadPoll::ThreadPoll(size_t thread_num) : poll_(std::make_shared<Poll>())
         // c 的 pthread.h 只接受 void *(*)(void *) 签名的函数 （要将工作函数设为全局函数或者静态成员函数）
         // 传递一个函数指针，并将 this 指针做为参数传递给它（成员函数有默认的this指针做为参数）
         std::thread(&ThreadPoll::Work, this).detach();
-        //std::cout << "creat the " << i << " thread\n";
     }
 }
 

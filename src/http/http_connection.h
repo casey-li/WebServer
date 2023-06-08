@@ -56,10 +56,11 @@ public:
         return ntohs(address_.sin_port);
     }
 
-    const char *GetIP() const
+    // 使用 inet_ntop 得先把地址转换为主机字节序
+    std::string GetIP() const
     {
-        char ip[16] = {};
-        return inet_ntop(AF_INET, &address_.sin_addr.s_addr, ip, 16);
+        char ip[16] = {0};
+        return std::string(inet_ntop(AF_INET, &address_.sin_addr.s_addr, ip, 16));
     }
     
     struct sockaddr_in GetAddress() const

@@ -12,6 +12,7 @@
 #include "../http/http_connection.h"
 #include "../timer/heap_timer.h"
 #include "../log/log.h"
+#include "../mysql_connection_pool/mysql_connection_pool.h"
 
 
 class WebServer

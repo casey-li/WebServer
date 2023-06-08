@@ -142,11 +142,18 @@ void HttpRequest::ParsePost()
         ParseFromUrlEncoded();
         if (DEFAULT_HTML_TAG.count(path_))
         {
-            int tag = DEFAULT_HTML_TAG.at(path_);
-            LOG_DEBUG("ParsePost, tag : %d", tag);
-            bool is_login = (tag == 1);
-            // 验证登录信息是否正确来决定返回那个页面
-            path_ = is_login ? "/welcome.html" : "/error.html";
+            int act = DEFAULT_HTML_TAG.at(path_);
+            // 根据登录或者注册的结果来决定返回哪个页面
+            if (act == 0) // 用户请求注册
+            {
+                LOG_INFO("user: %s requires sign up", post_["username"].c_str());
+                path_ = UserRegister(post_["username"], post_["password"]) ? "/welcome.html" : "/error.html";
+            }
+            else if (act == 1) // 用户请求登录
+            {
+                LOG_INFO("user: %s requires log in", post_["username"].c_str());
+                path_ = UserVerify(post_["username"], post_["password"]) ? "/welcome.html" : "/error.html";
+            }
         }
     }
 }
@@ -193,13 +200,13 @@ void HttpRequest::ParseFromUrlEncoded()
             default:
                 break;
         }
-        assert(last <= cur);
-        // 保存最后一个键值对
-        if (post_.count(key) == 0 && last < cur)
-        {
-            value = body_.substr(last, cur - last);
-            post_[key] = value;
-        }
+    }
+    assert(last <= cur);
+    // 保存最后一个键值对
+    if (post_.count(key) == 0 && last < cur)
+    {
+        value = body_.substr(last, cur - last);
+        post_[key] = value;
     }
 }
 
@@ -208,6 +215,62 @@ int HttpRequest::ConverHex(char ch)
     if (ch >= 'A' && ch <= 'F') return ch - 'A' + 10;
     if (ch >= 'a' && ch <= 'f') return ch - 'a' + 10;
     return ch;
+}
+
+bool HttpRequest::UserRegister(const std::string& name, const std::string& pwd)
+{
+    if (name.size() == 0 || pwd.size() == 0)
+    {
+        return false;
+    }
+    LOG_INFO("Register name: %s", name.c_str());
+    std::string sql = "SELECT count(*) from user where username = " + name;
+    std::shared_ptr<MysqlConnection> ptr = MysqlConnectionPool::GetInstance()->GetConnection();
+    if (!ptr->Query(sql) || !ptr->Next())
+    {
+        LOG_INFO("Failed to read database information!");
+        return false;
+    }
+    // 用户名重复，注册失败
+    if (ptr->GetValue(0) == "1") 
+    {
+        LOG_INFO("User name: %s has been used!", name.c_str());
+        return false;
+    }
+    sql = "INSERT INTO user VALUES('" + name + "', '" + pwd +"')";
+    if (!ptr->Update(sql))
+    {
+        LOG_ERROR("Insert new user error!");
+        return false;
+    }
+    return true;
+}
+
+bool HttpRequest::UserVerify(const std::string& name, const std::string& pwd)
+{
+    if (name.size() == 0 || pwd.size() == 0)
+    {
+        return false;
+    }
+    LOG_INFO("Verify user name: %s, passward: %s", name.c_str(), pwd.c_str());
+    std::string sql = "SELECT username, password from user where username = '" + name + "'";
+    std::shared_ptr<MysqlConnection> ptr = MysqlConnectionPool::GetInstance()->GetConnection();
+    // 查询
+    if (!ptr->Query(sql))
+    {
+        LOG_INFO("Query failed!");
+        return false;
+    }
+    // 验证结果
+    while (ptr->Next())
+    {
+        if (ptr->GetValue(1) == pwd)
+        {
+            return true;
+        }
+    }
+    LOG_INFO("User input error password: %s", pwd.c_str());
+    return false;
 }
 
 std::string HttpRequest::GetPost(const std::string &key) const

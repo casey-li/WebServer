@@ -23,7 +23,7 @@ void HttpConnection::Initialization(int fd, const sockaddr_in& addr)
     read_buf_.RetrieveAll();
     write_buf_.RetrieveAll();
     http_connection_numner_++;
-    LOG_INFO("Client[%d](%s:%d) in, userCount:%d", fd_, GetIP(), GetPort(), static_cast<int>(http_connection_numner_));
+    LOG_INFO("Client[%d](%s : %d) in, userCount:%d", fd_, GetIP().c_str(), GetPort(), static_cast<int>(http_connection_numner_));
 }
 
 ssize_t HttpConnection::Read(int &error_num)
@@ -118,6 +118,6 @@ void HttpConnection::Close()
         is_close_ = true; 
         http_connection_numner_--;
         close(fd_);
-        LOG_INFO("Client[%d](%s:%d) quit, UserCount:%d", fd_, GetIP(), GetPort(), static_cast<int>(http_connection_numner_));
+        LOG_INFO("Client[%d](%s : %d) quit, UserCount:%d", fd_, GetIP().c_str(), GetPort(), static_cast<int>(http_connection_numner_));
     }
 }

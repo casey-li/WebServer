@@ -9,7 +9,7 @@ int main()
         日志开关，日志等级，阻塞队列大小
     */
     WebServer web
-    (9999, 10000, 3,
+    (9999, 60000, 3,
     true, 7, 3,
     true, 1, 1024);
     web.Start();

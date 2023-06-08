@@ -1,10 +1,5 @@
 #include "webserver.h"
 
-
-/*
-TODO:
-2、Sql连接池的初始化
-*/
 WebServer::WebServer(
         int port, int timeout, int trigger_mode, bool open_linger_, int connect_poll_num, 
         int thread_num, bool open_log, int log_level, int block_queue_size) :
@@ -12,7 +7,6 @@ WebServer::WebServer(
         open_linger_(open_linger_), resource_dir_(""), listen_event_(0), 
         connection_event_(0), thread_poll_(std::make_unique<ThreadPoll>(thread_num)),
         epoller_(std::make_unique<Epoller>()), timer_(std::make_unique<HeapTimer>())
-
 {
     std::string tmp = getcwd(nullptr, 256);
     size_t end = tmp.find("/src");
@@ -25,7 +19,7 @@ WebServer::WebServer(
     {
         Log::GetInstance()->Initialization(log_level, "./log", ".log", block_queue_size);
     }
-    // SqlConnection::
+    MysqlConnectionPool::GetInstance();
     InitEventMode(trigger_mode);
     if (!InitSocket()) 
     {
@@ -45,18 +39,17 @@ WebServer::WebServer(
             LOG_INFO("Port: %d, OpenLinger: %s", port_, open_linger_? "true" : "false");
             LOG_INFO("Listen Mode: %s, OpenConn Mode: %s", (listen_event_ & EPOLLET ? "ET": "LT"), (connection_event_ & EPOLLET ? "ET": "LT"));
             LOG_INFO("Log level: %d", log_level);
-            LOG_INFO("ResourceDir: %s", HttpConnection::resource_dir_);
-            // //LOG_INFO("SqlConnPool's thread num: %d, ThreadPool' thread num: %d", connect_poll_num, thread_num);
+            LOG_INFO("ResourceDir: %s", HttpConnection::resource_dir_.c_str());
+            LOG_INFO("MySql connect database : %s", MysqlConnectionPool::GetInstance()->GetDatabaseName().c_str());
         }
     }
 }
 
-// todo : 关闭sql池
 WebServer::~WebServer()
 {
     close(listen_fd_);
     is_close_ = true;
-    // 关闭sql池
+    MysqlConnectionPool::GetInstance()->CloseMysqlConnectionPool();
 }
 
 void WebServer::Start()
@@ -239,7 +232,6 @@ void WebServer::AddClient(int fd, const sockaddr_in &address)
 
 void WebServer::CloseConnection(HttpConnection &client)
 {
-    std::cout << client.GetFd() << " close\n";
     assert(client.GetFd() > 0);
     LOG_INFO("Client[%d] quit!", client.GetFd());
     epoller_->DeleteFd(client.GetFd());

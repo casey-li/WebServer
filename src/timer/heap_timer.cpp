@@ -7,7 +7,6 @@ void HeapTimer::Add(int id, int timeout, const TimeoutCallback &func)
     {
         // 已有节点，修改值并调整堆
         heap_[index_[id]].func = func;
-        // std::cout << "exist id" << id << std::endl; 
         AdjustTime(id, timeout);
     }
     else
@@ -18,12 +17,10 @@ void HeapTimer::Add(int id, int timeout, const TimeoutCallback &func)
         heap_.push_back({id, Clock::now() + static_cast<MS>(timeout), func});
         HeapifyUp(index);
     }
-    std::cout << "add fd " << id << std::endl;
 }
 
 void HeapTimer::AdjustTime(int id, int timeout)
 {
-    // std::cout << "id is " << id << ", count(): "<< index_.count(id) << std::endl;
     assert(!heap_.empty() && index_.count(id) > 0);
     size_t index = index_[id];
     heap_[index].close_time = Clock::now() + static_cast<MS>(timeout);
@@ -42,7 +39,6 @@ void HeapTimer::ClearTimeoutNode()
         {
             break; // 最早的节点未超时
         }
-        // std::cout << "fd " << node.id << "callback\n";
         node.func();
         PopFront();
     }

@@ -8,6 +8,7 @@
 #include <regex>
 #include "../buffer/buffer.h"
 #include "../log/log.h"
+#include "../mysql_connection_pool/mysql_connection_pool.h"
 
 class HttpRequest
 {
@@ -96,6 +97,12 @@ private:
 
     // 解析 URL 编码的特殊字符
     static int ConverHex(char ch);
+
+    // 用户请求注册信息，连接数据库添加用户的账号，密码
+    bool UserRegister(const std::string& name, const std::string& pwd);
+
+    // 连接数据库验证用户的登录信息
+    bool UserVerify(const std::string& name, const std::string& pwd);
 
     PARSE_STATUS parse_status_; // 当前解析请求报文的状态
 
