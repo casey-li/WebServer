@@ -10,14 +10,14 @@
 
 #include <iostream>
 
-class ThreadPoll
+class ThreadPool
 {
 public:
-    ThreadPoll() = default;
+    ThreadPool() = default;
 
-    explicit ThreadPoll(size_t thread_num = 8);
+    explicit ThreadPool(size_t thread_num = 8);
 
-    ~ThreadPoll();
+    ~ThreadPool();
 
     void Work();
 
@@ -26,7 +26,7 @@ public:
 
 private:
     // 结构体，池子
-    struct Poll
+    struct Pool
     {
         std::mutex mtx;                         // 互斥锁
         std::condition_variable cond;             // 条件变量
@@ -34,18 +34,18 @@ private:
         std::queue<std::function<void()>> tasks;  // 任务队列，存储无参且返回值为 void 的可调用对象 （待执行的任务）
     };
     
-    std::shared_ptr<Poll> poll_; // 池子
+    std::shared_ptr<Pool> pool_; // 池子
 };
 
 template<typename T>
-void ThreadPoll::AddTask(T&& task)
+void ThreadPool::AddTask(T&& task)
 {
     {
-        std::lock_guard<std::mutex> locker(poll_->mtx);
+        std::lock_guard<std::mutex> locker(pool_->mtx);
         // 使用 std::forward<T> 实现完美转发，确保参数的值类别保持不变。
-        poll_->tasks.emplace(std::forward<T>(task));
+        pool_->tasks.emplace(std::forward<T>(task));
     }
-    poll_->cond.notify_one();
+    pool_->cond.notify_one();
 }
 
 #endif

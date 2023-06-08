@@ -7,7 +7,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "../thread_poll/thread_poll.h"
+#include "../thread_pool/thread_pool.h"
 #include "../epoller/epoller.h"
 #include "../http/http_connection.h"
 #include "../timer/heap_timer.h"
@@ -90,7 +90,7 @@ private:
 
     uint32_t connection_event_; // 默认的客户端连接的监听事件
 
-    std::unique_ptr<ThreadPoll> thread_poll_;
+    std::unique_ptr<ThreadPool> thread_pool_;
 
     std::unique_ptr<Epoller> epoller_;
     

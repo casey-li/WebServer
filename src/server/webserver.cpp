@@ -5,7 +5,7 @@ WebServer::WebServer(
         int thread_num, bool open_log, int log_level, int block_queue_size) :
         port_(port), listen_fd_(-1), timeout_MS_(timeout), is_close_(false), 
         open_linger_(open_linger_), resource_dir_(""), listen_event_(0), 
-        connection_event_(0), thread_poll_(std::make_unique<ThreadPoll>(thread_num)),
+        connection_event_(0), thread_pool_(std::make_unique<ThreadPool>(thread_num)),
         epoller_(std::make_unique<Epoller>()), timer_(std::make_unique<HeapTimer>())
 {
     std::string tmp = getcwd(nullptr, 256);
@@ -252,7 +252,7 @@ void WebServer::DealRead(HttpConnection &client)
     assert(client.GetFd() > 0);
     UpdateClientTimeout(client);
     // 使用 bind 将成员函数修改为 void(*)() 的可调用对象（绑定成员函数，必须传递 this），右值 
-    thread_poll_->AddTask(std::bind(&WebServer::ReadTask, this, std::ref(client)));
+    thread_pool_->AddTask(std::bind(&WebServer::ReadTask, this, std::ref(client)));
 }
 
 void WebServer::ReadTask(HttpConnection &client)
@@ -272,7 +272,7 @@ void WebServer::DealWrite(HttpConnection &client)
 {
     assert(client.GetFd() > 0);
     UpdateClientTimeout(client);
-    thread_poll_->AddTask(std::bind(&WebServer::WriteTask, this, std::ref(client)));
+    thread_pool_->AddTask(std::bind(&WebServer::WriteTask, this, std::ref(client)));
 }
 
 void WebServer::WriteTask(HttpConnection &client)
