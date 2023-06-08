@@ -80,7 +80,7 @@ bool HeapTimer::HeapifyDown(size_t index)
 {
     assert(index >= 0 && index < heap_.size());
     size_t i = index;
-    int size = heap_.size(), small_index = index;
+    size_t size = heap_.size(), small_index = index;
     while (index < size) 
     {
         small_index = (2 * index + 1 < size && heap_[2 * index + 1] < heap_[small_index]) ? 2 * index + 1 : small_index;

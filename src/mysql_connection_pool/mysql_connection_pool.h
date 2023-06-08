@@ -21,7 +21,7 @@ public:
     std::shared_ptr<MysqlConnection> GetConnection(); 
 
     void CloseMysqlConnectionPool();
-    
+
     std::string GetDatabaseName()
     {
         return db_name_;
@@ -49,7 +49,7 @@ private:
 
     int user_count_; 
 
-    int min_num_, max_num_;
+    size_t min_num_, max_num_;
 
     int timeout_;
 

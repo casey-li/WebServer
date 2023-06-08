@@ -1,3 +1,4 @@
 notes/* linguist-vendored
 resources/* linguist-vendored
+resources/css* linguist-vendored
 old_version/resources/* linguist-vendored

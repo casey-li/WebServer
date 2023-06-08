@@ -52,7 +52,7 @@ bool MysqlConnection::Next()
 {
     if (result_)
     {
-        if (row_ = mysql_fetch_row(result_))
+        if ((row_ = mysql_fetch_row(result_)) != nullptr)
         {
             return true;
         }

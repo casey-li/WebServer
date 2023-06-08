@@ -166,7 +166,7 @@ void HttpRequest::ParseFromUrlEncoded()
         return ;
     }
     std::string key, value;
-    int num = 0, cur = 0, last = 0;
+    size_t num = 0, cur = 0, last = 0;
     for (; cur < len; ++cur) // 遍历每个字符
     {
         switch (body_[cur]) 

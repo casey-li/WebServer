@@ -1,0 +1,98 @@
+2023-06-08 19:04:11.681280 [info] : Init Socket Success! listen fd : 15
+2023-06-08 19:04:11.681318 [info] : ========== Server initialization ==========
+2023-06-08 19:04:11.681380 [info] : Port: 9999, OpenLinger: true
+2023-06-08 19:04:11.681404 [info] : Listen Mode: ET, OpenConn Mode: ET
+2023-06-08 19:04:11.681413 [info] : Log level: 1
+2023-06-08 19:04:11.681537 [info] : ResourceDir: /home/casey/niuke/webserver/resources/
+2023-06-08 19:04:11.681617 [info] : MySql connect database : WebServer
+2023-06-08 19:04:40.737092 [info] : Init Socket Success! listen fd : 15
+2023-06-08 19:04:40.737144 [info] : ========== Server initialization ==========
+2023-06-08 19:04:40.737154 [info] : Port: 9999, OpenLinger: true
+2023-06-08 19:04:40.737207 [info] : Listen Mode: ET, OpenConn Mode: ET
+2023-06-08 19:04:40.737222 [info] : Log level: 1
+2023-06-08 19:04:40.737254 [info] : ResourceDir: /home/casey/niuke/webserver/resources/
+2023-06-08 19:04:40.737331 [info] : MySql connect database : WebServer
+2023-06-08 19:04:40.737349 [info] : ========== Start Server ==========
+2023-06-08 19:04:45.601244 [info] : Client[16](192.168.190.1 : 56330) in, userCount:1
+2023-06-08 19:04:45.601390 [info] : Client[16] in!
+2023-06-08 19:04:45.601460 [info] : Client[17](192.168.190.1 : 56331) in, userCount:2
+2023-06-08 19:04:45.601527 [info] : Client[17] in!
+2023-06-08 19:04:45.852259 [info] : Client[18](192.168.190.1 : 56332) in, userCount:3
+2023-06-08 19:04:45.852406 [info] : Client[18] in!
+2023-06-08 19:04:45.852471 [info] : Client[22](192.168.190.1 : 56333) in, userCount:4
+2023-06-08 19:04:45.852509 [info] : Client[22] in!
+2023-06-08 19:04:45.852532 [info] : Client[23](192.168.190.1 : 56334) in, userCount:5
+2023-06-08 19:04:45.852544 [info] : Client[23] in!
+2023-06-08 19:04:45.874290 [info] : Client[24](192.168.190.1 : 56335) in, userCount:6
+2023-06-08 19:04:45.874409 [info] : Client[24] in!
+2023-06-08 19:04:59.803787 [info] : user: casey requires log in
+2023-06-08 19:04:59.803878 [info] : Verify user name: casey, passward: casey
+2023-06-08 19:04:59.963813 [error]: ParseRequestLine Error!
+2023-06-08 19:04:59.964164 [info] : Client[16] quit!
+2023-06-08 19:04:59.964548 [info] : Client[16](192.168.190.1 : 56330) quit, UserCount:5
+2023-06-08 19:05:00.013061 [info] : Client[16](192.168.190.1 : 56369) in, userCount:6
+2023-06-08 19:05:00.013318 [info] : Client[16] in!
+2023-06-08 19:05:09.775523 [info] : user: casey requires log in
+2023-06-08 19:05:09.775733 [info] : Verify user name: casey, passward: 5353
+2023-06-08 19:05:09.839194 [info] : User input error password: 5353
+2023-06-08 19:05:09.839857 [error]: ParseRequestLine Error!
+2023-06-08 19:05:09.840105 [info] : Client[22] quit!
+2023-06-08 19:05:09.840429 [info] : Client[22](192.168.190.1 : 56333) quit, UserCount:5
+2023-06-08 19:05:09.889019 [info] : Client[22](192.168.190.1 : 56401) in, userCount:6
+2023-06-08 19:08:24.127816 [info] : Init Socket Success! listen fd : 15
+2023-06-08 19:08:24.127854 [info] : ========== Server initialization ==========
+2023-06-08 19:08:24.127863 [info] : Port: 9999, OpenLinger: true
+2023-06-08 19:08:24.127915 [info] : Listen Mode: ET, OpenConn Mode: ET
+2023-06-08 19:08:24.127927 [info] : Log level: 1
+2023-06-08 19:08:24.127933 [info] : ResourceDir: /home/casey/niuke/webserver/resources/
+2023-06-08 19:08:24.127942 [info] : MySql connect database : WebServer
+2023-06-08 19:08:24.127948 [info] : ========== Start Server ==========
+2023-06-08 19:08:25.885093 [info] : Client[16](192.168.190.1 : 56577) in, userCount:1
+2023-06-08 19:08:25.885257 [info] : Client[16] in!
+2023-06-08 19:08:25.934518 [info] : Client[17](192.168.190.1 : 56578) in, userCount:2
+2023-06-08 19:08:25.935641 [info] : Client[17] in!
+2023-06-08 19:08:25.935727 [info] : Client[18](192.168.190.1 : 56579) in, userCount:3
+2023-06-08 19:08:25.935744 [info] : Client[18] in!
+2023-06-08 19:08:25.935767 [info] : Client[22](192.168.190.1 : 56580) in, userCount:4
+2023-06-08 19:08:25.935777 [info] : Client[22] in!
+2023-06-08 19:08:25.935793 [info] : Client[23](192.168.190.1 : 56581) in, userCount:5
+2023-06-08 19:08:25.935805 [info] : Client[23] in!
+2023-06-08 19:08:25.958036 [info] : Client[26](192.168.190.1 : 56582) in, userCount:6
+2023-06-08 19:08:25.958220 [info] : Client[26] in!
+2023-06-08 19:08:45.471124 [info] : Client[16] quit!
+2023-06-08 19:08:45.472650 [info] : Client[16](192.168.190.1 : 56577) quit, UserCount:5
+2023-06-08 19:08:45.501093 [info] : Client[16](192.168.190.1 : 56594) in, userCount:6
+2023-06-08 19:08:45.501250 [info] : Client[16] in!
+2023-06-08 19:08:51.558765 [info] : user: casey requires log in
+2023-06-08 19:08:51.559441 [info] : Verify user name: casey, passward: aaa
+2023-06-08 19:08:51.639647 [info] : User input error password: aaa
+2023-06-08 19:08:51.640279 [error]: ParseRequestLine Error!
+2023-06-08 19:08:51.640480 [info] : Client[22] quit!
+2023-06-08 19:08:51.640695 [info] : Client[22](192.168.190.1 : 56580) quit, UserCount:5
+2023-06-08 19:08:51.690148 [info] : Client[6](192.168.190.1 : 56599) in, userCount:6
+2023-06-08 20:09:36.444909 [info] : Init Socket Success! listen fd : 15
+2023-06-08 20:09:36.444945 [info] : ========== Server initialization ==========
+2023-06-08 20:09:36.444950 [info] : Port: 9999, OpenLinger: true
+2023-06-08 20:09:36.444952 [info] : Listen Mode: ET, OpenConn Mode: ET
+2023-06-08 20:09:36.444954 [info] : Log level: 1
+2023-06-08 20:09:36.444956 [info] : ResourceDir: /home/casey/niuke/webserver/resources/
+2023-06-08 20:09:36.444958 [info] : MySql connect database : WebServer
+2023-06-08 20:09:36.445010 [info] : ========== Start Server ==========
+2023-06-08 20:09:47.722875 [info] : Client[16](192.168.190.1 : 59452) in, userCount:1
+2023-06-08 20:09:47.723073 [info] : Client[16] in!
+2023-06-08 20:09:47.723129 [info] : Client[17](192.168.190.1 : 59453) in, userCount:2
+2023-06-08 20:09:47.723140 [info] : Client[17] in!
+2023-06-08 20:09:47.830700 [info] : Client[18](192.168.190.1 : 59456) in, userCount:3
+2023-06-08 20:09:47.830930 [info] : Client[18] in!
+2023-06-08 20:09:47.830973 [info] : Client[23](192.168.190.1 : 59457) in, userCount:4
+2023-06-08 20:09:47.830981 [info] : Client[23] in!
+2023-06-08 20:09:47.830991 [info] : Client[22](192.168.190.1 : 59458) in, userCount:5
+2023-06-08 20:09:47.830997 [info] : Client[22] in!
+2023-06-08 20:09:47.850289 [info] : Client[24](192.168.190.1 : 59459) in, userCount:6
+2023-06-08 20:09:47.850431 [info] : Client[24] in!
+2023-06-08 20:09:58.811345 [info] : user: casey requires log in
+2023-06-08 20:09:58.811547 [info] : Verify user name: casey, passward: casey
+2023-06-08 20:09:59.090333 [error]: ParseRequestLine Error!
+2023-06-08 20:09:59.090742 [info] : Client[17] quit!
+2023-06-08 20:09:59.090985 [info] : Client[17](192.168.190.1 : 59453) quit, UserCount:5
+2023-06-08 20:09:59.144055 [info] : Client[17](192.168.190.1 : 59488) in, userCount:6
