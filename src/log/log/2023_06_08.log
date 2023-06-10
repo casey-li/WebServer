@@ -1,7 +1,0 @@
-2023-06-08 17:27:45.568717 [info] : LOG_INFO
-2023-06-08 17:27:45.568746 [warn] : LOG_WARN
-2023-06-08 17:27:45.568776 [error]: LOG_ERROR
-2023-06-08 17:33:21.908974 [info] : save info1 : test string
-2023-06-08 17:33:21.908998 [info] : save info2 : test char *
-2023-06-08 17:33:37.309603 [info] : save info1 : test string
-2023-06-08 17:33:37.309627 [info] : save info2 : test char *

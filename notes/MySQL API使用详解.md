@@ -1,4 +1,23 @@
-# 连接数据库的步骤
+# 目录
+
+* [1. 连接数据库的步骤](#1-连接数据库的步骤)
+* [2. MySQL C API](#2-mysql-c-api)
+    * [2.1 初始化连接环境](#21-初始化连接环境)
+    * [2.2 连接 MySQL 服务器](#22-连接-mysql-服务器)
+    * [2.3 执行 sql 语句](#23-执行-sql-语句)
+    * [2.4 获取结果集](#24-获取结果集)
+    * [2.5 得到结果集的列数](#25-得到结果集的列数)
+    * [2.6 获取表头->列名(字段名)](#26-获取表头---列名-字段名)
+    * [2.7 得到结果集中字段的长度](#27-得到结果集中字段的长度)
+    * [2.8 遍历结果集](#28-遍历结果集)
+    * [2.9 资源回收](#29-资源回收)
+    * [2.10 字符编码](#210-字符编码)
+    * [2.11 事务操作](#211-事务操作)
+    * [2.12 打印错误信息](#212-打印错误信息)
+* [3. 实例代码](#3-实例代码)
+
+
+# 1. 连接数据库的步骤
 
 1. 初始化连接环境
 
@@ -27,16 +46,16 @@
 
 7. 释放资源
 
-# MySQL C API
+# 2. `MySQL C API`
 
-## 初始化连接环境
+## 2.1 初始化连接环境
 ```c++
 // 参数 mysql -> null
 // 返回值: 该函数将分配、初始化、并返回新对象，通过返回的这个对象去连接MySQL的服务器
 MYSQL *mysql_init(MYSQL *mysql) ;
 ```
 
-## 连接 mysql 服务器
+## 2.2 连接 mysql 服务器
 ```c++
 MYSQL *mysql_real_connect(
     MYSQL *mysql,           // mysql_init() 函数的返回值
@@ -55,7 +74,7 @@ MYSQL *mysql_real_connect(
         句柄: 是windows中的一个概念, 句柄可以理解为一个实例(或者对象)
 ```
 
-## 执行 sql 语句
+## 2.3 执行 sql 语句
 ```c++
 // 执行一个sql语句, 添删查改的sql语句都可以
 int mysql_query(MYSQL *mysql, const char *query);
@@ -68,7 +87,7 @@ int mysql_query(MYSQL *mysql, const char *query);
         - 如果出现错误，返回非0值。 
 ```
 
-## 获取结果集
+## 2.4 获取结果集
 ```c++
 // 将结果集从 mysql(参数) 对象中取出
 // MYSQL_RES 对应一块内存, 里边保存着这个查询之后得到的结果集
@@ -80,7 +99,7 @@ MYSQL_RES *mysql_store_result(MYSQL *mysql);
     - 失败: NULL 
 ```
 
-## 得到结果集的列数
+## 2.5 得到结果集的列数
 ```c++
 unsigned int mysql_num_fields(MYSQL_RES *result)
 
@@ -88,7 +107,7 @@ unsigned int mysql_num_fields(MYSQL_RES *result)
         调用 mysql_store_result() 得到的返回值
 ```
 
-## 获取表头 -> 列名 (字段名)
+## 2.6 获取表头 -> 列名 (字段名)
 ```c++
 MYSQL_FIELD *mysql_fetch_fields(MYSQL_RES *result);
 
@@ -136,7 +155,7 @@ for(int i = 0; i < num; ++i)
 }
 ```
 
-## 得到结果集中字段的长度
+## 2.7 得到结果集中字段的长度
 ```c++
 /* 
 返回结果集内当前行的列的长度:
@@ -171,7 +190,7 @@ if (row)
 }
 ```
 
-## 遍历结果集
+## 2.8 遍历结果集
 ```c++
 typedef char** MYSQL_ROW;
 // 遍历结果集的下一行 
@@ -189,7 +208,7 @@ MYSQL_ROW mysql_fetch_row(MYSQL_RES *result);
     - 失败: NULL, 说明数据已经读完了
 ```
 
-## 资源回收
+## 2.9 资源回收
 ```c++
 // 释放结果集
 void mysql_free_result(MYSQL_RES *result);
@@ -198,7 +217,7 @@ void mysql_free_result(MYSQL_RES *result);
 void mysql_close(MYSQL *mysql);
 ```
 
-## 字符编码
+## 2.10 字符编码
 ```c++
 // 获取api默认使用的字符编码
 // 为当前连接返回默认的字符集。
@@ -211,7 +230,7 @@ const char *mysql_character_set_name(MYSQL *mysql)
 int mysql_set_character_set(MYSQL *mysql, char *csname);
 ```
 
-## 事务操作
+## 2.11 事务操作
 ```c++
 // mysql中默认会进行事务的提交
 // 因为自动提交事务, 会对我们的操作造成影响
@@ -236,7 +255,7 @@ my_bool mysql_rollback(MYSQL *mysql)
         成功: 0, 失败: 非0
 ```
 
-## 打印错误信息
+## 2.12 打印错误信息
 ```c++
 // 返回错误的描述
 const char *mysql_error(MYSQL *mysql);
@@ -244,7 +263,7 @@ const char *mysql_error(MYSQL *mysql);
 // 返回错误的编号
 unsigned int mysql_errno(MYSQL *mysql);
 ```
-# 实例代码
+# 3. 实例代码
 
 ```c++
 #include <stdio.h>
