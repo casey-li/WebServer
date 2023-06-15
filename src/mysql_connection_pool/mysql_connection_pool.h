@@ -7,6 +7,7 @@
 #include <thread>
 #include <condition_variable>
 #include "mysql_connection.h"
+#include "../json/json.h"
 
 class MysqlConnectionPool
 {
@@ -32,7 +33,7 @@ public:
 private:
     MysqlConnectionPool();
     
-    bool ParseJsonFile();
+    bool InitializationParameters(const Json &config);
 
     // 增加一个连接
     void AddConnection();

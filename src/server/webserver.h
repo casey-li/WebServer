@@ -13,15 +13,13 @@
 #include "../timer/heap_timer.h"
 #include "../log/log.h"
 #include "../mysql_connection_pool/mysql_connection_pool.h"
+#include "../json/json.h"
 
 
 class WebServer
 {
 public:
-    WebServer(int port, int timeout, int trigger_mode, 
-            bool open_linger_, int connect_poll_num, 
-            int thread_num, bool open_log, int log_level,
-            int block_queue_size);
+    WebServer(const Json &config);
 
     ~WebServer();
 

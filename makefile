@@ -6,7 +6,8 @@ TARGET = ./bin/server
 
 SRCS = 	./src/buffer/*.cpp ./src/epoller/*.cpp \
 		./src/http/*.cpp ./src/log/*.cpp ./src/server/*.cpp \
-		./src/thread_pool/*.cpp ./src/timer/*.cpp ./src/mysql_connection_pool/*.cpp ./main.cpp 
+		./src/thread_pool/*.cpp ./src/timer/*.cpp ./src/mysql_connection_pool/*.cpp ./main.cpp \
+		./src/json/*.cpp
 
 # OBJS = $(patsubst %.cpp, %.o, $(SRCS))
 

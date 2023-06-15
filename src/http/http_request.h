@@ -14,7 +14,7 @@ class HttpRequest
 {
 public:
     // 解析客户端请求时，主状态机的状态
-    enum PARSE_STATUS
+    enum ParseStatus
     {
         PARSE_REQUEST_LINE = 0, // 当前正在分析请求行
         PARSE_HEADER,           // 当前正在分析头部字段
@@ -104,7 +104,7 @@ private:
     // 连接数据库验证用户的登录信息
     bool UserVerify(const std::string& name, const std::string& pwd);
 
-    PARSE_STATUS parse_status_; // 当前解析请求报文的状态
+    ParseStatus parse_status_; // 当前解析请求报文的状态
 
     std::string method_, path_, version_, body_;                // 保存解析得到的结果
 

@@ -87,6 +87,7 @@ bool HttpRequest::ParseRequestLine(const std::string &line)
         parse_status_ = PARSE_HEADER;
         return true;
     }
+    LOG_ERROR(line.c_str());
     LOG_ERROR("ParseRequestLine Error!");
     return false;
 }
@@ -224,7 +225,7 @@ bool HttpRequest::UserRegister(const std::string& name, const std::string& pwd)
         return false;
     }
     LOG_INFO("Register name: %s", name.c_str());
-    std::string sql = "SELECT count(*) from user where username = " + name;
+    std::string sql = "SELECT count(*) from user where username = '" + name + "'";
     std::shared_ptr<MysqlConnection> ptr = MysqlConnectionPool::GetInstance()->GetConnection();
     if (!ptr->Query(sql) || !ptr->Next())
     {

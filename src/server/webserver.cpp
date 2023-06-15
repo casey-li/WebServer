@@ -1,11 +1,9 @@
 #include "webserver.h"
 
-WebServer::WebServer(
-        int port, int timeout, int trigger_mode, bool open_linger_, int connect_poll_num, 
-        int thread_num, bool open_log, int log_level, int block_queue_size) :
-        port_(port), listen_fd_(-1), timeout_MS_(timeout), is_close_(false), 
-        open_linger_(open_linger_), resource_dir_(""), listen_event_(0), 
-        connection_event_(0), thread_pool_(std::make_unique<ThreadPool>(thread_num)),
+WebServer::WebServer(const Json &config) :
+        port_(config["Server"]["port"]), listen_fd_(-1), timeout_MS_(config["Server"]["timeout"]), is_close_(false), 
+        open_linger_(config["Server"]["open_linger"]), resource_dir_(""), listen_event_(0), 
+        connection_event_(0), thread_pool_(std::make_unique<ThreadPool>(static_cast<size_t>(config["ThreadPool"]["thread_num"].AsInt()))),
         epoller_(std::make_unique<Epoller>()), timer_(std::make_unique<HeapTimer>())
 {
     std::string tmp = getcwd(nullptr, 256);
@@ -15,18 +13,18 @@ WebServer::WebServer(
     resource_dir_ += "/resources/";
     HttpConnection::http_connection_numner_ = 0;
     HttpConnection::resource_dir_ = resource_dir_;
-    if (open_log)
+    if (config["Log"]["open_log"])
     {
-        Log::GetInstance()->Initialization(log_level, "./log", ".log", block_queue_size);
+        Log::GetInstance()->Initialization(config["Log"]["log_level"], "./log", ".log", config["Log"]["block_queue_size"]);
     }
     MysqlConnectionPool::GetInstance();
-    InitEventMode(trigger_mode);
+    InitEventMode(config["Server"]["ET_mode"]);
     if (!InitSocket()) 
     {
         is_close_ = true;
     }
     // 根据是否需要打印日志设置相关信息
-    if (open_log)
+    if (config["Log"]["open_log"])
     {
         // Log::GetInstance()->Initialization(log_level, "./log", ".log", block_queue_size);
         if (is_close_)
@@ -38,7 +36,7 @@ WebServer::WebServer(
             LOG_INFO("========== Server initialization ==========");
             LOG_INFO("Port: %d, OpenLinger: %s", port_, open_linger_? "true" : "false");
             LOG_INFO("Listen Mode: %s, OpenConn Mode: %s", (listen_event_ & EPOLLET ? "ET": "LT"), (connection_event_ & EPOLLET ? "ET": "LT"));
-            LOG_INFO("Log level: %d", log_level);
+            LOG_INFO("Log level: %d", config["Log"]["log_level"]);
             LOG_INFO("ResourceDir: %s", HttpConnection::resource_dir_.c_str());
             LOG_INFO("MySql connect database : %s", MysqlConnectionPool::GetInstance()->GetDatabaseName().c_str());
         }

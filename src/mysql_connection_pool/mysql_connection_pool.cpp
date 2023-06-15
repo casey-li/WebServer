@@ -53,8 +53,8 @@ MysqlConnectionPool::~MysqlConnectionPool()
 
 MysqlConnectionPool::MysqlConnectionPool() : is_closed_(false)
 {
-    // 1、解析 json 文件获取连接数据库的信息
-    if (!ParseJsonFile())
+    Json config;
+    if (!InitializationParameters(config.ParseConfig("./config/config.json")))
     {
         return;
     }
@@ -69,18 +69,17 @@ MysqlConnectionPool::MysqlConnectionPool() : is_closed_(false)
     std::thread(&MysqlConnectionPool::RecycleConnection, this).detach();
 }
 
-// TODO: json 解析器解析配置
-bool MysqlConnectionPool::ParseJsonFile()
+bool MysqlConnectionPool::InitializationParameters(const Json &config)
 {
-    ip_ = "localhost";
-    user_ = "root";
-    passward_ = "root";
-    db_name_ = "WebServer";
-    port_ = 3306;
-    min_num_ = 10;
-    max_num_ = 50;
-    timeout_ = 200;
-    max_idle_time_ = 1000;
+    ip_ = config["MysqlPool"]["ip"].AsString();
+    user_ = config["MysqlPool"]["user"].AsString();
+    passward_ = config["MysqlPool"]["passward"].AsString();
+    db_name_ = config["MysqlPool"]["db_name"].AsString();
+    port_ = static_cast<unsigned short>(config["MysqlPool"]["port"].AsInt());
+    min_num_ = static_cast<size_t>(config["MysqlPool"]["min_thread_num"].AsInt());
+    max_num_ = static_cast<size_t>(config["MysqlPool"]["max_thread_num"].AsInt());
+    timeout_ = static_cast<size_t>(config["MysqlPool"]["timeout"].AsInt());
+    max_idle_time_ = static_cast<size_t>(config["MysqlPool"]["max_idle_time"].AsInt());
     return true;
 }
 
