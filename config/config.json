@@ -1,0 +1,27 @@
+{
+    "Server": {
+        "port": 9999,
+        "timeout": 60000,
+        "ET_mode" : 3,
+        "open_linger" : true
+    },
+    "ThreadPool":{
+        "thread_num": 4
+    },
+    "MysqlPool":{
+        "ip": "localhost",
+        "user": "root",
+        "passward": "root",
+        "db_name": "WebServer",
+        "port": 3306,
+        "min_thread_num": 3,
+        "max_thread_num": 6,
+        "timeout": 200,
+        "max_idle_time": 1000
+    },
+    "Log":{
+        "open_log": true,
+        "log_level": 1,
+        "block_queue_size": 1024
+    }
+}

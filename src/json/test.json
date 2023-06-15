@@ -1,0 +1,83 @@
+{
+    "CookieSPAEnabled": false,
+    "MultiVariantTestingEnabled": false,
+    "UseV2": true,
+    "MobileSDK": false,
+    "SkipGeolocation": true,
+    "ScriptType": "LOCAL",
+    "Version": "6.25.0",
+    "OptanonDataJSON": "42e7c639-42ed-4e0f-936c-e7f2a5fcb01e",
+    "GeolocationUrl": "https://geolocation.onetrust.com/cookieconsentpub/v1/geo/location",
+    "RuleSet": [
+        {
+            "Id": "2d37ebdd-1388-407a-a3d0-f50c404a3c28",
+            "Name": "Global",
+            "Countries": [
+                "pr",
+                "ps",
+                "pw",
+                "pn"
+            ],
+            "States": {},
+            "LanguageSwitcherPlaceholder": {
+                "default": "zh-Hans"
+            },
+            "BannerPushesDown": false,
+            "Default": true,
+            "Global": true,
+            "Type": "IAB2",
+            "UseGoogleVendors": false,
+            "VariantEnabled": false,
+            "TestEndTime": null,
+            "Variants": [],
+            "TemplateName": "IAB China",
+            "Conditions": []
+        }
+    ],
+    "IabData": {
+        "cookieVersion": "1",
+        "createdTime": "2022-01-18T21:18:47.693905",
+        "updatedTime": "2022-01-18T21:18:47.693914",
+        "cmpId": "28",
+        "cmpVersion": "1",
+        "consentScreen": "1",
+        "consentLanguage": null,
+        "vendorListVersion": 0,
+        "maxVendorId": 0,
+        "encodingType": "0",
+        "globalVendorListUrl": "https://cdn.cookielaw.org/vendorlist/iabData.json"
+    },
+    "IabV2Data": {
+        "cookieVersion": "1",
+        "createdTime": "2022-01-18T21:18:47.888293",
+        "updatedTime": "2022-01-18T21:18:47.888301",
+        "cmpId": "28",
+        "cmpVersion": "1",
+        "consentScreen": "1",
+        "consentLanguage": null,
+        "vendorListVersion": 126,
+        "maxVendorId": 0,
+        "encodingType": "0",
+        "globalVendorListUrl": "https://assets.msn.cn/staticsb/statics/latest/oneTrustCN/1.0/consent/42e7c639-42ed-4e0f-936c-e7f2a5fcb01e/iab2Data.json"
+    },
+    "GoogleData": {
+        "vendorListVersion": 1,
+        "googleVendorListUrl": "https://cdn.cookielaw.org/vendorlist/googleData.json"
+    },
+    "ScriptDynamicLoadEnabled": false,
+    "TenantFeatures": {
+        "CookieV2BannerFocus": true,
+        "CookieV2GPC": true,
+        "CookieV2AssignTemplateRule": true,
+        "CookieV2TCF21": true,
+        "CookieV2GeneralVendors": true
+    },
+    "IsSuppressBanner": true,
+    "IsSuppressPC": true,
+    "PublisherCC": "US",
+    "Domain": "msn.cn",
+    "TenantGuid": "ae95a03a-87a1-437b-9c22-1443769a08ad",
+    "EnvId": "app-prod",
+    "RemoteActionsEnabled": false,
+    "GeoRuleGroupName": "MSN China Consent Policy"
+}
